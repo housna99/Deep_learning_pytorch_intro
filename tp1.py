@@ -52,8 +52,8 @@ def train(model, data, target, nEpoch, learningRate): #la training loop (iterate
         optim.step() #derniere etape modification des théta
         
     #traçage des graphes
-    plt.plot(epochVector, accVector, label="dev acc")
-    plt.plot(epochVector, lossVector, label="train acc")
+    plt.plot(epochVector, accVector, label="Accuracy")
+    plt.plot(epochVector, lossVector, label="Loss")
     plt.legend(loc="upper right")
     plt.xlabel('Epochs')
     plt.title("Expérience réalisée avec un taux d'apprentissage de "+str(learningRate))
@@ -64,7 +64,7 @@ def genData(n, nsamps):  #juste generation des données selon deux gaussiènes
     x =  np.random.uniform(size=(n,n))
     y= np.random.uniform(size=(n,1))
   
-    f = (x+y)**1/2 + np.log(x**2 + np.abs(y)) #definition de la fonction f
+    f = np.log(x+y) #definition de la fonction f
     y2 = np.ones((nsamps,),dtype='int64')
     y2[:n0] = 0 # optional
 
@@ -76,7 +76,7 @@ def toytest(): #expérience
     model = Net(100,10)
     x,y=genData(100, 500)
     nEpoch = 100
-    lr=0.001
+    lr=1.0
     print("Données pour l'expérience:\nx y")
     print(str(x)+" "+str(y))
 
