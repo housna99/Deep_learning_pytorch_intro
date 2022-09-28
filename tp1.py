@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,8 +9,8 @@ class Net(nn.Module):
         self.nins=nins
         self.nout=nout
         nhid = int((nins+nout)/2)
-        self.hidden = nn.Linear(nins, nhid)
-        self.out    = nn.Linear(nhid, nout)
+        self.hidden = nn.Linear(nins, nhid) #1ere couche cachée
+        self.out    = nn.Linear(nhid, nout) #2eme couche cachée
 
     def forward(self, x): #comment l'info se propage #definir les fcts qui creent le graphe G
         x = torch.tanh(self.hidden(x)) #tanh est une activation linéaire
@@ -36,6 +37,7 @@ def train(model, data, target, nEpoch, learningRate): #la training loop (iterate
     lossVector=[]
     epochVector=[x for x in range(nEpoch)]
     idx = np.arange(nEpoch)
+    start = time.time()
     print("Loss Accuracy")
     for epoch in range(nEpoch): 
         np.random.shuffle(idx)
@@ -50,7 +52,9 @@ def train(model, data, target, nEpoch, learningRate): #la training loop (iterate
         accVector.append(acc)
         loss.backward() #la backpropagation 
         optim.step() #derniere etape modification des théta
-        
+    #temps
+    end = time.time()
+    print("Run time: %f s" % (end - start))  
     #traçage des graphes
     plt.plot(epochVector, accVector, label="Accuracy")
     plt.plot(epochVector, lossVector, label="Loss")
@@ -62,7 +66,7 @@ def train(model, data, target, nEpoch, learningRate): #la training loop (iterate
 def genData(n, nsamps):  #juste generation des données selon deux gaussiènes 
     n0 = int(nsamps*0.8) #*prior0)
     x =  np.random.uniform(size=(n,n))
-    y= np.random.uniform(size=(n,1))
+    y= np.random.uniform(size=(n,n))
   
     f = np.log(x+y) #definition de la fonction f
     y2 = np.ones((nsamps,),dtype='int64')
@@ -76,7 +80,7 @@ def toytest(): #expérience
     model = Net(100,10)
     x,y=genData(100, 500)
     nEpoch = 100
-    lr=1.0
+    lr=0.001
     print("Données pour l'expérience:\nx y")
     print(str(x)+" "+str(y))
 
