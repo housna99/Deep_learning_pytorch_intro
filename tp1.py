@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 class Net(nn.Module):
-    def __init__(self,nins,nout): #definir les parametres, cad les couches la on va faire 2 couches linéaires 
+    def __init__(self,nins,nout): #definir les parametres, cad les couches. ici on va faire 2 couches linéaires 
         super(Net, self).__init__()
         self.nins=nins
         self.nout=nout
@@ -36,35 +36,41 @@ def train(model, data, target, nEpoch, learningRate): #la training loop (iterate
     accVector=[]
     lossVector=[]
     epochVector=[x for x in range(nEpoch)]
+    nbIterBeforeMaxAcc = 0
     idx = np.arange(nEpoch)
-    start = time.time()
-    print("Loss Accuracy")
+    
+    print("Loss    Accuracy")
     for epoch in range(nEpoch): 
         np.random.shuffle(idx)
         tx=x[idx]
         ty=y[idx]
-        optim.zero_grad() #mettre a zero tous les gradients 
+
+        # forward
         haty = model(tx) #appeler forward on a les logits  
         loss = criterion(haty,ty) #on complète le graphe par la loss
+
+        #determination et affichage accuracy
         acc = test(model, tx ,ty) #data, target
-        print(str(loss.item())+" "+str(acc))
+        print(f"{loss.item():.4f}  {acc}")
+
+        #recupération de la loss et de l'accuracy pour affichage
         lossVector.append(loss.item())
         accVector.append(acc)
+
+        #backward
+        optim.zero_grad() #mettre a zero tous les gradients 
         loss.backward() #la backpropagation 
         optim.step() #derniere etape modification des théta
-    #temps
-    end = time.time()
-    print("Run time: %f s" % (end - start))  
-    #traçage des graphes
-    plt.plot(epochVector, accVector, label="Accuracy")
-    plt.plot(epochVector, lossVector, label="Loss")
-    plt.legend(loc="upper right")
-    plt.xlabel('Epochs')
-    plt.title("Expérience réalisée avec un taux d'apprentissage de "+str(learningRate))
-    plt.show()
 
-def genData(n, nsamps):  #juste generation des données selon deux gaussiènes 
-    n0 = int(nsamps*0.8) #*prior0)
+        if acc < 1.0:
+            nbIterBeforeMaxAcc += 1
+    
+     
+    return epochVector, accVector, lossVector, nbIterBeforeMaxAcc
+
+
+def genData(n, nsamps):  #generation des données selon deux gaussiennes 
+    n0 = int(nsamps*0.8)
     x =  np.random.uniform(size=(n,n))
     y= np.random.uniform(size=(n,n))
   
@@ -76,17 +82,50 @@ def genData(n, nsamps):  #juste generation des données selon deux gaussiènes
 
 
 def toytest(): #expérience
-    print("Début de l'expérience...")
-    model = Net(100,10)
-    x,y=genData(100, 500)
+    lrs = [0.001, 0.01, 0.1, 1.0]
     nEpoch = 100
-    lr=0.001
-    print("Données pour l'expérience:\nx y")
-    print(str(x)+" "+str(y))
+    runTimes = []
+    nbEpochBeforeMaxAcc = []
+    nbOfExperiences = 4
 
-    train(model, x, y, nEpoch, lr)
+    x,y=genData(100, 500)
 
-    print("Fin de l'expérience.")
+    for i in range(nbOfExperiences):
+        print(f"Début de l'expérience {i+1}...")
+        model = Net(100,10)
+        
+        print("Données pour l'expérience:")
+        print(f"x:   {x} \ny:   {y}")
+        start = time.time()
+        epochVector, accVector, lossVector, nbIter = train(model, x, y, nEpoch, lrs[i])
+        end = time.time()
+        runTimes.append(end - start)
+        nbEpochBeforeMaxAcc.append(nbIter)
+        print("Temps d'apprentissage d'environ: %f s" % runTimes[-1])
+        print(f"Nombre d'epochs pour avoir une précision de 100%: {nbIter}")
+
+        #traçage des graphes
+        plt.plot(epochVector, accVector, label="Accuracy")
+        plt.plot(epochVector, lossVector, label="Loss")
+        plt.legend(loc="upper right")
+        plt.xlabel('Epochs', fontsize=9)
+        plt.title(f"Expérience réalisée avec un taux d'apprentissage de {lrs[i]}", fontsize= 11)
+        plt.show()
+        print(f"Fin de l'expérience {i+1}.\n")
+    plt.subplot(3, 1, 1)
+    plt.plot([1, 2, 3, 4], runTimes, label="Temps d'apprentissage")
+    plt.legend(loc="upper right", prop={'size': 9})
+
+    plt.ylabel("Temps d'apprentissage en s", fontsize=8)
+    plt.title("Évolution du temps d'apprentissage entre les expériences", fontsize=11)
+
+    plt.subplot(3, 1, 3)
+    plt.plot([1, 2, 3, 4], nbEpochBeforeMaxAcc, label=f"Nombre d'epochs avant {100}% de précision", color='r')
+    plt.legend(loc="upper right", fontsize= 9)
+    plt.xlabel("n° d'expérience", fontsize= 9)
+    plt.ylabel("Nombre d'epochs", fontsize= 8)
+    plt.title("Évolution du nombre d'epochs necessaire entre les expériences", fontsize= 11)
+    plt.show()
 
 if __name__ == "__main__":
     toytest()
