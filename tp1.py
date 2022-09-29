@@ -27,7 +27,8 @@ def test(model, data, target):
     return acc
 
 def train(model, data, target, nEpoch, learningRate): #la training loop (iterate) 
-    optim = torch.optim.Adam(model.parameters(), lr=learningRate) #ADAM variante de SGD
+    #optim = torch.optim.Adam(model.parameters(), lr=learningRate) #ADAM variante de SGD
+    optim=torch.optim.SGD(model.parameters(), lr=learningRate)
     criterion = nn.CrossEntropyLoss()
 
     x=torch.FloatTensor(data) #convertir en tenseur 
@@ -86,10 +87,9 @@ def toytest(): #expérience
     nEpoch = 100
     runTimes = []
     nbEpochBeforeMaxAcc = []
-    nbOfExperiences = 4
+    nbOfExperiences = 2
 
     x,y=genData(100, 500)
-
     for i in range(nbOfExperiences):
         print(f"Début de l'expérience {i+1}...")
         model = Net(100,10)
@@ -109,7 +109,7 @@ def toytest(): #expérience
         plt.plot(epochVector, lossVector, label="Loss")
         plt.legend(loc="upper right")
         plt.xlabel('Epochs', fontsize=9)
-        plt.title(f"Expérience réalisée avec un taux d'apprentissage de {lrs[i]}", fontsize= 11)
+        plt.title(f"Expérience réalisée avec un taux d'apprentissage de {lrs[i]}, optimizer : SGD", fontsize= 11)
         plt.show()
         print(f"Fin de l'expérience {i+1}.\n")
     plt.subplot(3, 1, 1)
