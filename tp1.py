@@ -26,8 +26,8 @@ def test(model, data, target):
 
     return acc
 
-def train(model, data, target, nEpoch, learningRate): #la training loop (iterate) 
-    optim = torch.optim.Adam(model.parameters(), lr=learningRate) #ADAM variante de SGD
+def train(model, data, target, nEpoch,optim,learningRate): #la training loop (iterate) 
+    #optim = torch.optim.Adam(model.parameters(), lr=learningRate) #ADAM variante de SGD
     #optim=torch.optim.SGD(model.parameters(), lr=learningRate)
     criterion = nn.CrossEntropyLoss()
 
@@ -88,44 +88,85 @@ def toytest(): #expérience
     runTimes = []
     nbEpochBeforeMaxAcc = []
     nbOfExperiences = 4
-
+    choix_optimizer=input('choose type of Optimizer: 1)ADAM or 2)SGD ')
     x,y=genData(100, 500)
-    for i in range(nbOfExperiences):
-        print(f"Début de l'expérience {i+1}...")
-        model = Net(100,10)
-        
-        print("Données pour l'expérience:")
-        print(f"x:   {x} \ny:   {y}")
-        start = time.time()
-        epochVector, accVector, lossVector, nbIter = train(model, x, y, nEpoch, lrs[i])
-        end = time.time()
-        runTimes.append(end - start)
-        nbEpochBeforeMaxAcc.append(nbIter)
-        print("Temps d'apprentissage d'environ: %f s" % runTimes[-1])
-        print(f"Nombre d'epochs pour avoir une précision de 100%: {nbIter}")
+    if(choix_optimizer=='1'):
+        for i in range(nbOfExperiences):
+            print(f"Début de l'expérience {i+1} avec optimizer ADAM")
+            model = Net(100,10)
+            optim = torch.optim.Adam(model.parameters(), lr=lrs[i])
 
-        #traçage des graphes
-        plt.plot(epochVector, accVector, label="Accuracy")
-        plt.plot(epochVector, lossVector, label="Loss")
-        plt.legend(loc="upper right")
-        plt.xlabel('Epochs', fontsize=9)
-        plt.title(f"Expérience réalisée avec un taux d'apprentissage de {lrs[i]}", fontsize= 11)
+            print("Données pour l'expérience:")
+            print(f"x:   {x} \ny:   {y}")
+            start = time.time()
+            epochVector, accVector, lossVector, nbIter = train(model, x, y, nEpoch,optim, lrs[i])
+            end = time.time()
+            runTimes.append(end - start)
+            nbEpochBeforeMaxAcc.append(nbIter)
+            print("Temps d'apprentissage d'environ: %f s" % runTimes[-1])
+            print(f"Nombre d'epochs pour avoir une précision de 100%: {nbIter}")
+
+            #traçage des graphes
+            plt.plot(epochVector, accVector, label="Accuracy")
+            plt.plot(epochVector, lossVector, label="Loss")
+            plt.legend(loc="upper right")
+            plt.xlabel('Epochs', fontsize=9)
+            plt.title(f"Expérience réalisée avec un taux d'apprentissage de {lrs[i]}, avec optimizer : ADAM", fontsize= 11)
+            plt.show()
+            print(f"Fin de l'expérience {i+1}.\n")
+        plt.subplot(3, 1, 1)
+        plt.plot([1, 2, 3, 4], runTimes, label="Temps d'apprentissage")
+        plt.legend(loc="upper right", prop={'size': 9})
+
+        plt.ylabel("Temps d'apprentissage en s", fontsize=8)
+        plt.title("Évolution du temps d'apprentissage entre les expériences", fontsize=11)
+
+        plt.subplot(3, 1, 3)
+        plt.plot([1, 2, 3, 4], nbEpochBeforeMaxAcc, label=f"Nombre d'epochs avant {100}% de précision", color='r')
+        plt.legend(loc="upper right", fontsize= 9)
+        plt.xlabel("n° d'expérience", fontsize= 9)
+        plt.ylabel("Nombre d'epochs", fontsize= 8)
+        plt.title("Évolution du nombre d'epochs necessaire entre les expériences", fontsize= 11)
         plt.show()
-        print(f"Fin de l'expérience {i+1}.\n")
-    plt.subplot(3, 1, 1)
-    plt.plot([1, 2, 3, 4], runTimes, label="Temps d'apprentissage")
-    plt.legend(loc="upper right", prop={'size': 9})
+    elif(choix_optimizer=='2'):
+        for i in range(nbOfExperiences):
+            print(f"Début de l'expérience {i+1} avec optimizer SGD")
+            model = Net(100,10)
+            optim = torch.optim.SGD(model.parameters(), lr=lrs[i])
 
-    plt.ylabel("Temps d'apprentissage en s", fontsize=8)
-    plt.title("Évolution du temps d'apprentissage entre les expériences", fontsize=11)
+            print("Données pour l'expérience:")
+            print(f"x:   {x} \ny:   {y}")
+            start = time.time()
+            epochVector, accVector, lossVector, nbIter = train(model, x, y, nEpoch,optim, lrs[i])
+            end = time.time()
+            runTimes.append(end - start)
+            nbEpochBeforeMaxAcc.append(nbIter)
+            print("Temps d'apprentissage d'environ: %f s" % runTimes[-1])
+            print(f"Nombre d'epochs pour avoir une précision de 100%: {nbIter}")
 
-    plt.subplot(3, 1, 3)
-    plt.plot([1, 2, 3, 4], nbEpochBeforeMaxAcc, label=f"Nombre d'epochs avant {100}% de précision", color='r')
-    plt.legend(loc="upper right", fontsize= 9)
-    plt.xlabel("n° d'expérience", fontsize= 9)
-    plt.ylabel("Nombre d'epochs", fontsize= 8)
-    plt.title("Évolution du nombre d'epochs necessaire entre les expériences", fontsize= 11)
-    plt.show()
+            #traçage des graphes
+            plt.plot(epochVector, accVector, label="Accuracy")
+            plt.plot(epochVector, lossVector, label="Loss")
+            plt.legend(loc="upper right")
+            plt.xlabel('Epochs', fontsize=9)
+            plt.title(f"Expérience réalisée avec un taux d'apprentissage de {lrs[i]}, avec optimizer : SGD", fontsize= 11)
+            plt.show()
+            print(f"Fin de l'expérience {i+1}.\n")
+        plt.subplot(3, 1, 1)
+        plt.plot([1, 2, 3, 4], runTimes, label="Temps d'apprentissage")
+        plt.legend(loc="upper right", prop={'size': 9})
 
+        plt.ylabel("Temps d'apprentissage en s", fontsize=8)
+        plt.title("Évolution du temps d'apprentissage entre les expériences", fontsize=11)
+
+        plt.subplot(3, 1, 3)
+        plt.plot([1, 2, 3, 4], nbEpochBeforeMaxAcc, label=f"Nombre d'epochs avant {100}% de précision", color='r')
+        plt.legend(loc="upper right", fontsize= 9)
+        plt.xlabel("n° d'expérience", fontsize= 9)
+        plt.ylabel("Nombre d'epochs", fontsize= 8)
+        plt.title("Évolution du nombre d'epochs necessaire entre les expériences", fontsize= 11)
+        plt.show()
+    else:
+        print('choose 1 or 2')
 if __name__ == "__main__":
     toytest()

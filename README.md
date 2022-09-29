@@ -73,7 +73,7 @@ L'optimizer a piqué notre attention, du coup nous avons décidé de comparer en
 Les résultats montrent que l'optimizer d'ADAM marche en général mieux que celui du SGD.
 Pour un learning rate de 0.001, on trouve les résultats suivants:
 
-    - Avec SGD, le modèle ne converge pas .
+    - Avec SGD, le modèle nécessite plus d'itérations pour converger.
     - Avec ADAM, le modèle converge.
 
 ![image](Figure_1_SGD.png)
